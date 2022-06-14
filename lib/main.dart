@@ -1,5 +1,6 @@
 
 import 'dart:math';
+import 'package:eng_apli/api/NotificationFirebase.dart';
 import 'package:eng_apli/api/notifications_api.dart';
 import 'package:eng_apli/awesomeNotifications.dart';
 import 'package:eng_apli/controllers/patron_block.dart';
@@ -10,7 +11,7 @@ import 'package:workmanager/workmanager.dart';
 import 'package:flutter/material.dart';
 import './database/db.dart';
 import './models/models.dart';
-import 'package:flutter_swiper/flutter_swiper.dart';
+//import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flip_card/flip_card.dart';
 import 'dart:convert';
 import './globals.dart' as globals;
@@ -19,6 +20,7 @@ import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:eng_apli/utils.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:card_swiper/card_swiper.dart';
 
 Future<void> backgroundHandler(RemoteMessage message) async{
   print(message.data.toString());
@@ -30,7 +32,7 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
-  AwesomeNotifications().initialize('resource://drawable/spider', [
+  AwesomeNotifications().initialize('resource://drawable/playstore', [
     NotificationChannel(channelKey: "basic_channel",
       channelName: "channelName",
       channelDescription: "channelDescription",
@@ -67,7 +69,7 @@ void callbackDispatcher2()async{
   Workmanager().executeTask((taskName, inputData) async{
     var rng = Random();
     var num=rng.nextInt(inputData!["num"]);
-    createPlantFoodNotification(inputData["arrays"][num],inputData["array2"][num]);
+    createPlantFoodNotification(inputData["arrays"][num],{"word":inputData["arrays"][num], "answer":inputData["array2"][num]});
     //_showNotificationWithDefaultSound2(inputData["arrays"][num],inputData["array2"][num]);
     return Future.value(true);});
 
@@ -182,8 +184,9 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState(){
     super.initState();
     print("si corri ");
-    NotificationApi.init();
-     listenNotification();
+    LocalNotificationService.initialize(this.context);
+    //NotificationApi.init();
+     //listenNotification();
 
      //Background
     FirebaseMessaging.instance.getInitialMessage().then(
@@ -191,27 +194,34 @@ class _MyHomePageState extends State<MyHomePage> {
         print("FirebaseMessaging.instance.getInitialMessage");
         if (message != null) {
           print("New Notification");
-          // if (message.data['_id'] != null) {
-          //   Navigator.of(context).push(
-          //     MaterialPageRoute(
-          //       builder: (context) => DemoScreen(
-          //         id: message.data['_id'],
-          //       ),
-          //     ),
-          //   );
-          // }
+          if (message.data['ruta'] != null) {
+            Navigator.of(this.context).push(
+              MaterialPageRoute(
+                builder: (context) => DemoScreen(
+                  id: message.data['_id'],
+                ),
+              ),
+            );
+          }
         }
       },
     );
 
 
      //Foreground
-     FirebaseMessaging.onMessage.listen((event) {
-       if(event.notification !=null){
-         print(event.notification!.body);
-         print(event.notification!.title);
+     FirebaseMessaging.onMessage.listen((message) {
+       if(message.notification !=null){
+         print("entre en firebase");
+         print(message.notification!.body);
+         print(message.notification!.title);
        }
+       LocalNotificationService.display(message);
 
+     });
+
+     FirebaseMessaging.onMessageOpenedApp.listen((message) {
+       final route=message.data["route"];
+       print(route);
      });
 
 
@@ -252,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
               (route) =>route.isFirst );
     });
 
-    requestUserPermissions(this.context, channelKey: 'scheduled_channel', permissionList: mis_permisos);
+    requestUserPermissions(this.context, channelKey: 'basic_channel', permissionList: mis_permisos);
   }
   List<NotificationPermission> mis_permisos=[
     NotificationPermission.Alert,
@@ -424,13 +434,16 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(widget.title),
       ),
+
       body:Center(
         child: StreamBuilder<List<CheckWordsData>>(
           stream: blocks.chekWodsStream,
           builder: (context,AsyncSnapshot<List<CheckWordsData>> snapshot){
+            print(snapshot.data!.length);
             if (snapshot.data==null || snapshot.data!.isEmpty){
               return Container(
                 child: Center(
@@ -453,6 +466,8 @@ class _MyHomePageState extends State<MyHomePage> {
               return Column(
                 children: [
                   Cartas(context, snapshot.data!),
+                  //MySwiper(datos: snapshot.data!, context: context),
+
                   const SizedBox(height: 60,),
                   Container(                    
                     alignment: Alignment.center,
@@ -488,47 +503,49 @@ class _MyHomePageState extends State<MyHomePage> {
                                     }, child: Text("Interval")),
 
                                     OutlinedButton(onPressed: (){
-                                      // if(globals.minutos.abs().inMinutes<15){
-                                      //   ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
-                                      //         backgroundColor: Colors.pinkAccent,
-                                      //             content: Text("Minimum interval 15 minutes")));
-                                      // }
-                                      // else{
-                                      //     List<String> array1=[];
-                                      //     List<String> array2=[];
-                                      //     snapshot.data?.asMap().forEach((key, value) {array2.add(value.answer);
-                                      //     array1.add(value.word);});
-                                      //     Workmanager().registerPeriodicTask(
-                                      //     "2",
-                                      //                           //This is the value that will be
-                                      //                           // returned in the callbackDispatcher
-                                      //     "simplePeriodicTask",
-                                      //
-                                      //                           // When no frequency is provided
-                                      //                           // the default 15 minutes is set.
-                                      //                           // Minimum frequency is 15 min.
-                                      //                           // Android will automatically change
-                                      //                           // your frequency to 15 min
-                                      //                           // if you have configured a lower frequency.
-                                      //     frequency:globals.minutos,
-                                      //     inputData: {
-                                      //       "num":array1.length,
-                                      //       "arrays":array1,
-                                      //       "array2":array2
-                                      //                      }
-                                      //           );
-                                      //
-                                      //
-                                      //
-                                      // }
+                                      if(globals.minutos.abs().inMinutes<15){
+                                        ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
+                                              backgroundColor: Colors.pinkAccent,
+                                                  content: Text("Minimum interval 15 minutes")));
+                                      }
+                                      else{
+                                          List<String> array1=[];
+                                          List<String> array2=[];
+                                          snapshot.data?.asMap().forEach((key, value) {array2.add(value.answer);
+                                          array1.add(value.word);});
+                                          Workmanager().registerPeriodicTask(
+                                          "2",
+                                                                //This is the value that will be
+                                                                // returned in the callbackDispatcher
+                                          "simplePeriodicTask",
 
-                                      createRepeatNotification();
-                                      NotificationApi.periodicalNotification(title: "perron",body: "este es una pruba");
-                                      Navigator.pop(context);
+                                                                // When no frequency is provided
+                                                                // the default 15 minutes is set.
+                                                                // Minimum frequency is 15 min.
+                                                                // Android will automatically change
+                                                                // your frequency to 15 min
+                                                                // if you have configured a lower frequency.
+                                          frequency:globals.minutos,
+                                          inputData: {
+                                            "num":array1.length,
+                                            "arrays":array1,
+                                            "array2":array2
+                                                           }
+                                                );
 
-                                      ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
-                                          backgroundColor: Colors.pinkAccent,
-                                          content: Text("Interval of ${globals.minutos.abs().inMinutes} minutes created")));
+                                          Navigator.pop(context);
+
+                                          ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
+                                              backgroundColor: Colors.pinkAccent,
+                                              content: Text("Interval of ${globals.minutos.abs().inMinutes} minutes created")));
+
+
+
+                                      }
+
+                                      // createRepeatNotification();
+                                      // NotificationApi.periodicalNotification(title: "perron",body: "este es una pruba");
+
 
                                     }, child: Text("Create",textAlign: TextAlign.center,),),
 
@@ -742,6 +759,22 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
 }
+class DemoScreen extends StatelessWidget{
+  late String id;
+  DemoScreen({required this.id});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Container(
+        child: Text(id),
+      ),
+
+    );
+
+  }
+
+}
 
 
 AddWord(BuildContext context){
@@ -823,15 +856,44 @@ AddWord(BuildContext context){
 
 
 Cartas(BuildContext context, List<CheckWordsData> datos){
+  final _controller = SwiperController();
+  // "animation: false" does the trick
+  // "index" is the initial value when the swiper is shown
+
      return SizedBox(
          height: MediaQuery.of(context).size.height*0.5,
          width: MediaQuery.of(context).size.width,
            child:Container(
            padding: const EdgeInsets.all(15),
            child: Swiper(
+             itemCount: datos.length,
              itemBuilder: (BuildContext context, int index) {
+               //  Future.delayed(Duration(milliseconds: 1000), () {
+               //   return Center(child: CircularProgressIndicator());
+               // });
+
+
+
                return InkWell(
-                 onLongPress: (){},
+                 onLongPress: (){
+                   showDialog(
+                       context: context,
+                       builder: (_) => new AlertDialog(
+                         alignment: Alignment.center,
+                         content: Text("Delete?",textAlign: TextAlign.center,),
+                         actions: [
+                           OutlinedButton(onPressed: ()async{
+                             await blocks.deleteWord(datos[index].rowid,datos[index]);
+                             Navigator.pop(context);
+                           }, child: Text("Delete")),
+                           SizedBox(width: 90,),
+                           OutlinedButton(onPressed: (){
+                             Navigator.pop(context);
+                           }, child: Text("Cancel"))
+                         ],
+
+                       ));
+                 },
                  child: FlipCard(
                    front:Container(color: Colors.deepOrangeAccent,child: Center(child: Text(datos[index].word,
                        style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20)),)) ,
@@ -839,10 +901,10 @@ Cartas(BuildContext context, List<CheckWordsData> datos){
                      style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20),) ,),),
                  ),
                );
+
              },
-
-
-             itemCount: datos.length,
+             pagination: new SwiperPagination(),
+             control: new SwiperControl(),
              viewportFraction: 0.8,
              scale: 0.9,
            ),
@@ -853,6 +915,7 @@ Cartas(BuildContext context, List<CheckWordsData> datos){
 
 class TercePage extends StatelessWidget {
    final Map<String,String> payload;
+
 
   const TercePage({Key? key, required this.payload}) : super(key: key);
 
@@ -928,3 +991,94 @@ class SecondPage extends StatelessWidget {
   );
 
 }
+class MySwiper extends StatefulWidget {
+  BuildContext context;
+  List<CheckWordsData> datos;
+
+   MySwiper({Key? key, required this.datos, required this.context}) : super(key: key);
+
+  @override
+  State<MySwiper> createState() => _MySwiperState();
+}
+
+class _MySwiperState extends State<MySwiper> {
+  late List<CheckWordsData> datos=this.datos;
+  bool isLoading = false;
+
+
+  @override
+  void initState() {
+    super.initState();
+    print(datos);
+    //reload();
+  }
+
+  Future reload()async{
+    setState((){
+      isLoading = true;
+    });
+
+     setState((){
+       isLoading = false;
+
+     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+    // if (isLoading) {
+    //   return Center(child: CircularProgressIndicator());
+    // }
+    // else{
+    //   return Expanded(child:
+    //     SizedBox(
+    //       height: MediaQuery.of(this.context).size.height*0.5,
+    //       width: MediaQuery.of(this.context).size.width,
+    //       child:Container(
+    //         padding: const EdgeInsets.all(15),
+    //         child: Swiper(
+    //           itemBuilder: (BuildContext context, int index) {
+    //             return InkWell(
+    //               onLongPress: (){
+    //                 showDialog(
+    //                     context: context,
+    //                     builder: (_) => new AlertDialog(
+    //                       alignment: Alignment.center,
+    //                       content: Text("Delete?",textAlign: TextAlign.center,),
+    //                       actions: [
+    //                         OutlinedButton(onPressed: ()async{
+    //                           await blocks.deleteWord(datos[index].rowid,datos[index]);
+    //                           Navigator.pop(context);
+    //                         }, child: Text("Delete")),
+    //                         SizedBox(width: 90,),
+    //                         OutlinedButton(onPressed: (){
+    //                           Navigator.pop(context);
+    //                         }, child: Text("Cancel"))
+    //                       ],
+    //
+    //                     ));
+    //               },
+    //               child: FlipCard(
+    //                 front:Container(color: Colors.deepOrangeAccent,child: Center(child: Text(datos[index].word,
+    //                     style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20)),)) ,
+    //                 back: Container(color: Colors.amber, child: Center(child:Text(datos[index].answer,
+    //                   style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20),) ,),),
+    //               ),
+    //             );
+    //           },
+    //           pagination: new SwiperPagination(),
+    //           itemCount: datos.length,
+    //           viewportFraction: 0.8,
+    //           scale: 0.9,
+    //         ),
+    //       )
+    //
+    //   ),
+    //   );
+    //
+    // }
+
+  }
+}
+

@@ -34,13 +34,13 @@ dependencies:
   path:
   flutter_local_notifications:
   workmanager:
-  flutter_swiper :
   flip_card:
   rxdart:
   flutter_native_timezone:
   awesome_notifications:
   firebase_messaging: ^11.4.1
   firebase_core: ^1.17.1
+  card_swiper: ^2.0.4
 
 
 

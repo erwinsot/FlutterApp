@@ -50,6 +50,19 @@ class Block{
   void dispose() {
     streamWords.close();
   }
+
+  Future<void> deleteWord(int id, CheckWordsData word ) async {    //
+    await _database.delete(
+      'words',
+      // Utiliza la cláusula `where` para eliminar un dog específico
+      where: "rowid = ?",
+      // Pasa el id Dog a través de whereArg para prevenir SQL injection
+      whereArgs: [word.rowid],
+    );
+    findCheckWords();
+  }
+
+
 }
 
 

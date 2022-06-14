@@ -6,20 +6,24 @@ import 'models/models.dart';
 
 
 
-Future <void>createPlantFoodNotification(String? body, String summary)async{
+Future <void>createPlantFoodNotification(String? body, Map<String,String> payload)async{
   await AwesomeNotifications().
   createNotification(
       content: NotificationContent(id: createUniqueId(),
       channelKey: "basic_channel",
-      title: '${Emojis.money_money_bag+Emojis.plant_cactus}',
-        body: body,
-        summary: summary,
-        notificationLayout: NotificationLayout.Messaging,
+      title: '${Emojis.animals_bear} HORA DE ESTUDIAR MK  ${Emojis.animals_bear}',
+      body: ' Remember that is this? ${body}  ${Emojis.animals_fox} ',
+      payload:payload ,
+      summary: "HOLA sapo hp!!",
+
+      notificationLayout: NotificationLayout.Messaging,
+
+
       ),
           actionButtons: [
             NotificationActionButton(
-              key: 'Mark_Done',
-              label: 'Mark done',
+              key: 'Find out',
+              label: 'Find out',
             )
       ]
   );
