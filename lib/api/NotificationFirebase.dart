@@ -10,7 +10,7 @@ class LocalNotificationService {
   static void initialize(BuildContext context) {
     final InitializationSettings initializationSettings =
     InitializationSettings(
-        android: AndroidInitializationSettings("@mipmap/ic_launcher"));
+        android: AndroidInitializationSettings("@drawable/ic_stat_spider"));
 
     _notificationsPlugin.initialize(initializationSettings,onSelectNotification: (String? route) async{
       if(route != null){

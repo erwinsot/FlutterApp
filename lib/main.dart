@@ -32,14 +32,17 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(backgroundHandler);
-  AwesomeNotifications().initialize('resource://drawable/playstore', [
+  AwesomeNotifications().initialize('resource://drawable/ic_stat_spider', [
     NotificationChannel(channelKey: "basic_channel",
       channelName: "channelName",
       channelDescription: "channelDescription",
       defaultColor: Colors.teal,
       importance: NotificationImportance.Max,
       channelShowBadge: true,
+      enableVibration: true,
+
       ledColor: Colors.white
+
     ),
     NotificationChannel(
         channelKey: 'scheduled_channel',
@@ -67,9 +70,22 @@ void main() async{
 }
 void callbackDispatcher2()async{
   Workmanager().executeTask((taskName, inputData) async{
+    List<String> images=["https://img.freepik.com/vector-gratis/lindo-gato-donut-estilo-dibujos-animados-plana_138676-2624.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/ilustracion-dibujos-animados-lindo-rey-cerdo-gafas-concepto-animal-aislado-caricatura-plana_138676-2291.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/lindo-gato-malo-traje-gafas-sol-ilustracion-icono-dibujos-animados-bate-beisbol-concepto-icono-moda-animal-aislado-estilo-dibujos-animados-plana_138676-2170.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/ilustracion-icono-vector-dibujos-animados-lindo-gato-mano-concepto-icono-naturaleza-animal-aislado-premium-vector-estilo-dibujos-animados-plana_138676-4085.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/kitsune-lindo-personaje-dibujos-animados-espada-objeto-arte-aislado_138676-3159.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/personaje-dibujos-animados-lindo-gato-aguacate-fruta-animal-aislada_138676-3141.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/ejemplo-lindo-icono-vector-historieta-nino-monstruo-concepto-icono-vacaciones-monstruo-aislado-vector-premium-estilo-dibujos-animados-plana_138676-3995.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/gato-lindo-ilustracion-icono-vector-dibujos-animados-hueso-pescado-concepto-icono-naturaleza-animal-aislado-premium-vector-estilo-dibujos-animados-plana_138676-4270.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/astronauta-flotando-ilustracion-icono-vector-historieta-globo-estrella-concepto-icono-tecnologia-ciencia-aislado-vector-premium-estilo-dibujos-animados-plana_138676-3404.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/lindo-astronauta-montando-cohete-agitando-mano-icono-dibujos-animados-ilustracion-concepto-icono-tecnologia-ciencia_138676-2130.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/lindo-conejo-sosteniendo-zanahoria-dibujos-animados-vector-icono-ilustracion-animal-naturaleza-icono-concepto-aislado_138676-5071.jpg?size=338&ext=jpg",
+    "https://img.freepik.com/vector-gratis/ilustracion-vector-dibujos-animados-lindo-corgi-beber-leche-te-boba-bebida-animal-concepto-aislado-vector-estilo-dibujos-animados-plana_138676-1943.jpg?w=2000",];
     var rng = Random();
     var num=rng.nextInt(inputData!["num"]);
-    createPlantFoodNotification(inputData["arrays"][num],{"word":inputData["arrays"][num], "answer":inputData["array2"][num]});
+    var num2=rng.nextInt(images.length);
+    createPlantFoodNotification(inputData["arrays"][num],{"word":inputData["arrays"][num], "answer":inputData["array2"][num]},images[num2]);
     //_showNotificationWithDefaultSound2(inputData["arrays"][num],inputData["array2"][num]);
     return Future.value(true);});
 
@@ -271,7 +287,8 @@ class _MyHomePageState extends State<MyHomePage> {
     NotificationPermission.PreciseAlarms,
     NotificationPermission.Light,
     NotificationPermission.Vibration,
-    NotificationPermission.FullScreenIntent
+    NotificationPermission.FullScreenIntent,
+
   ];
 
   static Future<List<NotificationPermission>> requestUserPermissions(
@@ -443,7 +460,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: StreamBuilder<List<CheckWordsData>>(
           stream: blocks.chekWodsStream,
           builder: (context,AsyncSnapshot<List<CheckWordsData>> snapshot){
-            print(snapshot.data!.length);
             if (snapshot.data==null || snapshot.data!.isEmpty){
               return Container(
                 child: Center(
@@ -496,6 +512,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             showDialog(
                                 context: context,
                                 builder: (_) => new AlertDialog(
+                                  content: Text("interval minimum 15 minutes",textAlign: TextAlign.center,),
                                   alignment: Alignment.center,
                                   actions: [
                                     OutlinedButton(onPressed: (){
@@ -555,7 +572,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                                   ],
                                   buttonPadding: EdgeInsets.all(15),
-                                    title: const Text("Created notification",textAlign: TextAlign.center,),
+                                    title: const Text("Created notification",textAlign: TextAlign.center,)                                  ,
                                       ));
 
 

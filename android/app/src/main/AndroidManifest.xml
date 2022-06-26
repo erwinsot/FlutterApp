@@ -7,11 +7,23 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
    <application
-        android:label="Improve"
+        android:label="SpideLearn"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+
+       <meta-data
+           android:name="com.google.firebase.messaging.default_notification_icon"
+           android:resource="@drawable/ic_stat_spider" />
         <service          android:name="com.example.notificacioneslocales.localnotifications.services.LocalNotificationsService"
            android:exported="false" />
+
+       <service android:name=".playback.PlayerService"
+           android:exported="true">
+           <intent-filter>
+               <action android:name="android.intent.action.MEDIA_BUTTON" />
+               <action android:name="android.media.browse.MediaBrowserService" />
+           </intent-filter>
+       </service>
 
 
         <activity
@@ -48,6 +60,9 @@
                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
            </intent-filter>
        </receiver>
+
+
+
 
 
         <!-- Don't delete the meta-data below.
