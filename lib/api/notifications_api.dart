@@ -17,18 +17,18 @@ class NotificationApi{
         priority: Priority.max
 
       ),
-      iOS:IOSNotificationDetails(),
+      iOS:DarwinNotificationDetails(),
       );
   }
 
   static Future init({bool initScheduled=false})async{
     const android=AndroidInitializationSettings("@mipmap/ic_launcher");
-    const iOS=IOSInitializationSettings();
+    const iOS=DarwinInitializationSettings();
     const settings =InitializationSettings(android: android,iOS: iOS);
 
-    await _notification.initialize(settings,onSelectNotification: (payload)async{
+    await _notification.initialize(settings,onDidReceiveNotificationResponse: (payload)async{
 
-      onNotifications.add(payload);
+      onNotifications.add(payload as String?);
     });
   }
 

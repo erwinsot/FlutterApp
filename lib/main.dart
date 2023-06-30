@@ -103,23 +103,23 @@ void callbackDispatcher() async{
     // app_icon needs to be a added as a drawable
     // resource to the Android head project.
     var android = const AndroidInitializationSettings('@drawable/spider');
-    var IOS = const IOSInitializationSettings();
+    var IOS = const DarwinInitializationSettings();
 
     // initialise settings for both Android and iOS device.
     var settings = InitializationSettings(android: android, iOS: IOS);
     flip.initialize(
       settings,
-      onSelectNotification: (payload) async => {
-      debugPrint('notification payload: ' + payload!),
+      onDidReceiveNotificationResponse: (payload) async => {
+      debugPrint('notification payload: '),
         print(payload),
-        onNotifications2.add(payload)
+        onNotifications2.add(payload as String?)
 
       },
     );
     final NotificationAppLaunchDetails? notificationAppLaunchDetails =
         await flip.getNotificationAppLaunchDetails();
-    String? payload=notificationAppLaunchDetails!.payload;
-    print(payload);
+    String? payload=notificationAppLaunchDetails!.toString();
+    
     _showNotificationWithDefaultSound(flip,inputData["arrays"][num],inputData["array2"][num]);
     return Future.value(true);
   });
@@ -140,7 +140,7 @@ Future _showNotificationWithDefaultSound(flip,String word,String payload) async 
       ledColor: Colors.white
 
   );
-  var iOSPlatformChannelSpecifics = const IOSNotificationDetails();
+  var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
 
   // initialise channel platform for both Android and iOS device.
   var platformChannelSpecifics = NotificationDetails(
@@ -160,10 +160,13 @@ Future _showNotificationWithDefaultSound(flip,String word,String payload) async 
 class MyApp2 extends StatelessWidget {
   const MyApp2({Key? key}) : super(key: key);
 
+  static GlobalKey<NavigatorState>navigatorKey=GlobalKey<NavigatorState>();
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'F',
       theme: ThemeData(
         primarySwatch: Colors.green,
@@ -267,7 +270,13 @@ class _MyHomePageState extends State<MyHomePage> {
     //     print("falooo esta mierda");
     //   }
     // });
-    AwesomeNotifications().createdStream.listen((notification) {
+   AwesomeNotifications().setListeners(
+        onActionReceivedMethod: onActionReceivedMethod,
+        onNotificationCreatedMethod: onNotificationCreateMethod,
+        onNotificationDisplayedMethod: onNotificationDisplayMethod,
+        onDismissActionReceivedMethod: onDismissActionReceivedMethod);
+
+    /* AwesomeNotifications().createdStream.listen((notification) {
       ScaffoldMessenger.of(this.context).showSnackBar(SnackBar(
           content: Text("Notification Created on ${notification.channelKey}")));
     });
@@ -276,10 +285,35 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.pushAndRemoveUntil(
           this.context, MaterialPageRoute(builder:(_) =>TercePage(payload: event.payload!,)),
               (route) =>route.isFirst );
-    });
+    }); */
 
     requestUserPermissions(this.context, channelKey: 'basic_channel', permissionList: mis_permisos);
   }
+  static Future<void> onActionReceivedMethod(
+      ReceivedAction receivedAction) async {
+        final payload=receivedAction.payload??{} ;
+        Map<String, String> nonNullableMap = {};
+        payload.forEach((key, value) {
+        if (value != null) {
+        nonNullableMap[key] = value;
+        }
+      });
+        
+        
+          MyApp2.navigatorKey.currentState?.push(MaterialPageRoute(builder: (_)=>
+          TercePage(payload: nonNullableMap)));
+        
+        
+      }
+
+  static Future<void> onNotificationCreateMethod(
+      ReceivedNotification receivedNotification) async {}
+
+  static Future<void> onNotificationDisplayMethod(
+      ReceivedNotification receivedNotification) async {}
+
+  static Future<void> onDismissActionReceivedMethod(
+      ReceivedAction receivedAction) async {}
   List<NotificationPermission> mis_permisos=[
     NotificationPermission.Alert,
     NotificationPermission.Sound,
@@ -416,8 +450,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void dispose() {
-    AwesomeNotifications().actionSink.close();
-    AwesomeNotifications().createdSink.close();
+    /* AwesomeNotifications().actionSink.close();
+    AwesomeNotifications().createdSink.close(); */
     super.dispose();
   }
 
@@ -948,9 +982,9 @@ class TercePage extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child:Column(
           children: [
-            Text(payload.values.first),
+            Text( payload.values.first),
             SizedBox(height: 50,),
-            Text(payload.values.elementAt(1))
+            Text( payload.values.elementAt(1))
           ],
         )
       ),

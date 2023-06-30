@@ -12,12 +12,19 @@ class LocalNotificationService {
     InitializationSettings(
         android: AndroidInitializationSettings("@drawable/ic_stat_spider"));
 
-    _notificationsPlugin.initialize(initializationSettings,onSelectNotification: (String? route) async{
+    /* _notificationsPlugin.initialize(initializationSettings,onDidReceiveNotificationResponse: (String? route) async{
       if(route != null){
         Navigator.of(context).pushNamed(route);
       }
-    });
+    }); */
+    _notificationsPlugin.initialize(initializationSettings,onDidReceiveNotificationResponse: (details) => {
+      if(details !=null){
+        Navigator.of(context).pushNamed(details.toString())
+      }
+
+    },);
   }
+ 
 
   static void display(RemoteMessage message) async {
 
